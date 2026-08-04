@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فريق Aristi - تحدي الرحلة الخلوية الكشفي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
+
+    <!-- الهيدر -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md text-center">
+        <h1 class="text-2xl md:text-3xl font-black text-emerald-400 tracking-wider">كشافه الامير تادرس - فريق Aristi ⚜️</h1>
+        <p class="text-slate-400 text-sm mt-1">تحدي الرحلة الخلوية </p>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mx-auto px-4 py-8 flex-grow flex flex-col items-center justify-center max-w-3xl">
+        
+        <!-- 1. مرحلة تسجيل الفريق -->
+        <div id="game-container" class="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 w-full text-center fade-in">
+            <span class="bg-emerald-500/20 text-emerald-400 text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/30">رحله التدريب ⚜️</span>
+            <h2 class="text-2xl font-bold text-emerald-300 mt-4 mb-2">أدخل اسم طليعتك لبدء الرحله</h2>
+            
+
+            <div class="space-y-4 text-right">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">اسم الفريق / الطليعة:</label>
+                    <input type="text" id="team-name" placeholder="مثال: طليعة الصقور" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500 transition">
+                </div>
+                <p id="error-msg" class="text-rose-400 text-xs hidden font-bold text-center">❌ الرجاء كتابة اسم الفريق أولاً!</p>
+                
+                <button onclick="startGame()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-600/20 mt-2">
+                    دخول الرحله وبدء التحدي 🚀
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. مرحلة عرض المحتوى والشروحات الموسعة -->
+        <div id="content-container" class="w-full hidden flex-col items-center">
+            
+            <!-- معلومات الفريق والاسكور -->
+            <div class="w-full flex justify-between items-center mb-4 bg-slate-800 px-5 py-2.5 rounded-2xl border border-slate-700 text-sm">
+                <span class="text-emerald-400 font-bold">⚜️ <span id="display-team-name"></span></span>
+                <div class="flex gap-4">
+                    <span class="bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">🏆 النقاط: <strong id="score-val" class="text-emerald-400">0</strong></span>
+                    <span class="bg-slate-900 px-3 py-1 rounded-lg border border-slate-700">مرحلة <span id="current-step">1</span> من <span id="total-steps">7</span></span>
+                </div>
+            </div>
+
+            <!-- بطاقة الشرح -->
+            <div class="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-2xl overflow-hidden w-full p-6 md:p-8 fade-in">
+                <div id="image-wrapper" class="relative group overflow-hidden rounded-xl border border-slate-700 bg-slate-900 aspect-video mb-6 flex items-center justify-center">
+                    <img id="step-image" src="" alt="صورة الرحلة" class="w-full h-full object-contain" onerror="this.onerror=null; this.src='https://images.unsplash.com/photo-1510312305653-8ed496efae75?auto=format&fit=crop&w=800&q=80';">
+                </div>
+
+                <div>
+                    <h2 id="step-title" class="text-2xl font-bold text-emerald-300 mb-3 border-b border-slate-700 pb-2"></h2>
+                    <div id="step-desc" class="text-slate-300 text-sm md:text-base leading-relaxed mb-6 space-y-3"></div>
+                </div>
+
+                <button onclick="openQuiz()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold py-3 rounded-xl transition shadow-lg">
+                    فهمت الشرح.. انتقل لاختبار هذه المحطة 🧩
+                </button>
+            </div>
+        </div>
+
+        <!-- 3. مرحلة كويز الشفرة والسؤال العشوائي الثابت للمحطة -->
+        <div id="quiz-container" class="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-2xl p-6 md:p-8 w-full hidden fade-in text-right">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-3">
+                <span class="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">تحدي السرعة والشفرة ⏱️</span>
+                <span class="text-sm font-mono font-bold bg-rose-500/20 text-rose-400 px-3 py-1 rounded-full border border-rose-500/30">⏳ الوقت: <span id="timer">15</span> ثانية</span>
+            </div>
+
+            <h3 id="quiz-question" class="text-lg font-bold text-slate-100 mb-4"></h3>
+
+            <div id="quiz-options" class="space-y-3 mb-6">
+                <!-- الخيارات -->
+            </div>
+
+            <p id="quiz-feedback" class="text-sm font-bold text-center mb-4 hidden"></p>
+
+            <button id="next-station-btn" onclick="nextStation()" class="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold py-3 rounded-xl transition hidden">
+                الانتقال للمحطة التالية ➔
+            </button>
+        </div>
+
+        <!-- 4. مرحلة النهاية والنتيجة الكلية -->
+        <div id="result-container" class="bg-slate-800/90 border border-slate-700 rounded-2xl shadow-2xl p-8 w-full text-center hidden fade-in">
+            <div class="text-5xl mb-4">🎉</div>
+            <h2 class="text-3xl font-black text-emerald-400 mb-2">أنهيتم الرحلة الخلوية بنجاح!</h2>
+            <p class="text-slate-300 text-sm mb-6">أداء رائع لطليعة <strong id="final-team-name" class="text-white"></strong></p>
+            
+            <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl">
+                <p class="text-slate-400 text-xs">مجموع النقاط النهائية:</p>
+                <p class="text-4xl font-black text-emerald-400 mt-1"><span id="final-score">0</span> نقطة</p>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- الفوتر -->
+    <footer class="bg-slate-800 border-t border-slate-700 py-3 text-center text-xs text-slate-500">
+             فريق Aristi     
+    </footer>
+
+    <!-- منطق اللعبة والشروحات -->
+    <script>
+        const stepsData = [
+            {
+                title: "1. ما هي الرحلة الخلوية وأهدافها؟",
+                desc: `
+                    <p><strong>التعريف:</strong> هي رحلة سير على الأقدام لمسافة معينة (تختلف حسب الفئة العمرية)، يقوم بها أفراد الكشافة أو مجموعات الشباب.</p>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700 mt-2">
+                        <p class="font-bold text-emerald-400 mb-1">🎯 الأهداف الأساسية:</p>
+                        <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs md:text-sm">
+                            <li>تدريب المشاركين على الاعتماد على النفس وتحمل المسؤولية.</li>
+                            <li>تطبيق المهارات الكشفية والفنون العملية (كالخرائط، البوصلة، التخييم، والإسعافات الأولية).</li>
+                            <li>استكشاف الطبيعة والتعرف على معالم البيئة المحيطة.</li>
+                            <li>تقوية روح العمل الجماعي والتعاون بين أفراد الفريق.</li>
+                        </ul>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/0QpcsGnw/1785879431649.png",
+                questions: [
+                    {
+                        q: "ما هو الهدف الرئيسي من الرحلة الخلوية كشفياً؟",
+                        options: ["النزهة والترفيه فقط دون أهداف", "تدريب الكشاف على الاعتماد على النفس وتطبيق مهاراته", "الابتعاد عن المخيم والجلوس منفرداً", "شراء المستلزمات من المتاجر البرية"],
+                        correct: 1
+                    },
+                    {
+                        q: "ماذا تشمل المهارات الكشفية العملية التطبيقية في الرحلة؟",
+                        options: ["الخرائط والبوصلة والتخييم والإسعافات", "ألعاب الفيديو الرقمية", "الطهي السريع في المطاعم", "صيانة المركبات الآلية"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                title: "2. أنواع الرحلات الخلوية",
+                desc: `
+                    <p>تتعدد أنواع الرحلات الخلوية بناءً على الهدف والزمن:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700">
+                            <p class="font-bold text-emerald-400 mb-1">📌 حسب الهدف:</p>
+                            <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
+                                <li><strong>استكشافية:</strong> استكشاف منطقة جديدة ودراسة طبيعتها.</li>
+                                <li><strong>علمية/بحثية:</strong> جمع عينات أو دراسة ظاهرة بيئية.</li>
+                                <li><strong>تدريبية:</strong> تطبيق مهارات السير والاتجاهات والنصب.</li>
+                                <li><strong>خدمة وتنمية مجتمعية:</strong> تنفيذ مشروع خدمة عامة.</li>
+                            </ul>
+                        </div>
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700">
+                            <p class="font-bold text-emerald-400 mb-1">⏰ حسب التوقيت:</p>
+                            <ul class="list-disc list-inside space-y-1 text-slate-300 text-xs">
+                                <li><strong>نهاراً:</strong> تبدأ صباحاً وتُختتم قبل الغروب.</li>
+                                <li><strong>ليلية (خلوية ليلية):</strong> تتضمن السير ليلاً واستخدام النجوم والبوصلة في الظلام (تحتاج لأمان عالي).</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/wvs7r06q/IMG-20260805-WA0004.jpg",
+                questions: [
+                    {
+                        q: "ما هي الرحلة التي يتم فيها تنفيذ مشروع خدمة عامة في قرية أو منطقة نائية؟",
+                        options: ["رحلة ترفيهية حرة", "رحلة خدمة وتنمية مجتمعية", "رحلة استكشافية بحتة", "رحلة تسوق ليلية"],
+                        correct: 1
+                    },
+                    {
+                        q: "ما الذي تمتاز به الرحلة الخلوية الليلية؟",
+                        options: ["تتم بالكامل تحت ضوء المصابيح المنزلية", "تتضمن السير ليلاً والتدرب على النجوم والبوصلة وتحتاج لأمان عالٍ", "تُقام داخل القاعات المغلقة", "تكون بدون أي قيود أمنية"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                title: "3. مراحل تنفيذ الرحلة الخلوية",
+                desc: `
+                    <p>لتنفيذ رحلة ناجحة، تمر بثلاث مراحل أساسية:</p>
+                    <div class="space-y-2 mt-2 text-xs md:text-sm">
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">1. مرحلة التخطيط والإعداد (قبل الرحلة):</strong> تحديد الهدف، دراسة خط السير بالخريطة، الحصول على التصاريح، وتوزيع المهام وتجهيز الحقيبة.
+                        </div>
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">2. مرحلة التنفيذ (أثناء الرحلة):</strong> الالتزام بخط السير الجماعي، تطبيق المهارات، أخذ الاستراحات المنظمة، والالتزام بالقواعد البيئية (لا تترك أثراً).
+                        </div>
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">3. مرحلة التقييم (بعد الرحلة):</strong> كتابة التقرير النهائي، تقييم الأداء ومعالجة الأخطاء، وصيانة وترتيب جميع المعدات.
+                        </div>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/4xTqHd7X/1785878334762.png",
+                questions: [
+                    {
+                        q: "في أي مرحلة يتم دراسة خط السير واستخراج التصاريح وتوزيع المهام؟",
+                        options: ["مرحلة التقييم بعد الرحلة", "مرحلة التنفيذ أثناء الرحلة", "مرحلة التخطيط والإعداد قبل الرحلة", "مرحلة تفكيك المخيم الختامية"],
+                        correct: 2
+                    },
+                    {
+                        q: "ما هو المبدأ البيئي المتبع أثناء مرحلة التنفيذ في البرية؟",
+                        options: ["ترك المخلفات في مكانها", "مبدأ: لا تترك أثراً", "إشعال النيران في كل مكان", "الصيد العشوائي للحيوانات"],
+                        correct: 1
+                    }
+                ]
+            },
+            {
+                title: "4. محتويات حقيبة الرحلة الخلوية",
+                desc: `
+                    <p>يجب أن تكون حقيبة الظهر خفيفة وعملية، وتتضمن:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2 text-xs md:text-sm">
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700 space-y-1">
+                            <p class="font-bold text-emerald-400">🎒 الأساسيات والملابس:</p>
+                            <p>ملابس قطنية مريحة، حذاء سير متين ومجرب، غطاء رأس (كاب)، ومعطف واقٍ للمطر.</p>
+                        </div>
+                        <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700 space-y-1">
+                            <p class="font-bold text-emerald-400">🩹 الإسعافات والطوارئ:</p>
+                            <p>شاش، مطهر، لاصق جروح، مسكنات، كشاف يدوي ببطاريات إضافية، صافرة طوارئ، وسكين متعدد.</p>
+                        </div>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/yd0rBBxs/IMG-20260805-WA0000.jpg",
+                questions: [
+                    {
+                        q: "ما هي المواصفات الأساسية الواجب توفرها في حقيبة ظهر الكشاف للرحلة؟",
+                        options: ["أن تكون ثقيلة وكبيرة جداً", "أن تكون خفيفة وعملية وتحتوي على الأساسيات", "أن تحتوي على أدوات ترفيهية ثقيلة", "أن تقتصر على الملابس الرسمية"],
+                        correct: 1
+                    },
+                    {
+                        q: "أي من الآتي يعتبر من أدوات الطوارئ الضرورية في حقيبة الرحلة؟",
+                        options: ["كشاف يدوي ببطاريات إضافية وصافرة طوارئ", "أجهزة تكييف محمولة", "أدوات مطبخ منزلية ثقيلة", "ألعاب بلاستيكية"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                title: "5. قواعد الأمن والسلامة في الرحلة",
+                desc: `
+                    <p>قواعد حتمية لضمان سلامة أفراد الفريق طوال خط السير:</p>
+                    <div class="space-y-2 mt-2 text-xs md:text-sm">
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">🤝 قاعدة الفريق الواحد:</strong> عدم السماح لأي فرد بالانفصال عن المجموعة بمفرده نهائياً وتحت أي ظرف.
+                        </div>
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">💧 شرب الماء باستمرار:</strong> لتجنب الجفاف، خاصة في المناطق الحارة أو أثناء المجهود البدني.
+                        </div>
+                        <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-700">
+                            <strong class="text-emerald-400">⚠️ احترام الطبيعة والاتصال:</strong> الحذر من النباتات السامة أو الحشرات والحيوانات البرية، والتأكد من وجود وسيلة اتصال سريعة مع قيادة المخيم.
+                        </div>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/KYj6xW3g/1785879251222.png",
+                questions: [
+                    {
+                        q: "ماذا تعني 'قاعدة الفريق الواحد' في الأمن والسلامة؟",
+                        options: ["السير منفردين لتوفير السرعة", "عدم السماح لأي فرد بالانفصال عن المجموعة بمفرده نهائياً", "تقسيم الفريق لمجموعات متفرقة بمدن مختلفة", "الاعتماد على الفرد الواحد في اتخاذ القرار"],
+                        correct: 1
+                    },
+                    {
+                        q: "ما الفائدة من شرب الماء باستمرار أثناء الرحلة الخلوية؟",
+                        options: ["تجنب الجفاف أثناء المجهود البدني والحرارة", "زيادة وزن الحقيبة الشخصية", "تقليل السرعة في خط السير", "التخلص من الأدوات الزائدة"],
+                        correct: 0
+                    }
+                ]
+            },
+            {
+                title: "6. جدول العلامات والإشارات السرية الكشفية",
+                desc: `
+                    <p class="mb-2">هذه هي العلامات الرسمية الموضحة في صورتك الكشفية ومعانيها المكتوبة تحتها:</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">🏠 <strong>بداية الطريق</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">➡️ <strong>سير في هذا الاتجاه / دز يميناً</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">⚡ <strong>أسرع / تَمَهَّل</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">👥 <strong>تفرقنا مجموعات / تجمعنا هنا</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">🔄 <strong>عد من حيث أتيت / أنا داخل المكان</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">🛡️ <strong>منطقة أصدقاء / منطقة أعداء</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">⛺ <strong>مخيم بهذا الاتجاه / إنتظرنا هنا</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">💧 <strong>ماء صالح للشرب / ماء غير صالح</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">🕌 <strong>مسجد من هنا / مرافق صحية</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">✉️ <strong>رسالة مخفية / رسالة بعد 3 خطى</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">🐅 <strong>هنا حيوان مفترس / هناك خطر</strong></div>
+                        <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700">❌ <strong>لا تذهب من هنا / نهاية الطريق / أنا خارج المكان</strong></div>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/TYMHkKkg/IMG-20260804-WA0075.jpg",
+                questions: [
+                    {
+                        q: "بناءً على الصورة، ماذا تعني علامة وضع عودين متقاطعين على شكل (X)؟",
+                        options: ["مكان تجمع الطعام", "لا تذهب من هنا", "بداية الطريق", "وجود ماء صالح للشرب"],
+                        correct: 1
+                    },
+                    {
+                        q: "بناءً على الصورة، ما معنى العلامة التي توضح دائرة بداخلها وعاء أو إشارة ماء؟",
+                        options: ["وجود حيوان مفترس", "منطقة أعداء", "ماء صالح للشرب", "منطقة أصدقاء"],
+                        correct: 2
+                    }
+                ]
+            },
+            {
+                title: "7. النجوم والاهتداء بها في الرحلة الخلوية",
+                desc: `
+                    <p><strong>الاهتداء بالنجوم:</strong> تُعد النجوم وسيلة طبيعية قديمة وموثوقة لتحديد الاتجاهات ليلاً أثناء الرحلات الخلوية في البرية.</p>
+                    <div class="bg-slate-900/60 p-3 rounded-xl border border-slate-700 mt-2 space-y-2 text-xs md:text-sm">
+                        <p class="font-bold text-emerald-400">✨ كيفية الاستفادة منها:</p>
+                        <ul class="list-disc list-inside space-y-1 text-slate-300">
+                            <li><strong>نجم القطب الشمالي:</strong> يُعتبر الدليل الأثبت في نصف الكرة الشمالي، حيث يشير دائماً وبثبات نحو جهة الشمال الجغرافي.</li>
+                            <li><strong>مجموعات النجوم (الكوكبات):</strong> تساعد الكشافة على معرفة الوقت والاتجاهات الفرعية من خلال مراقبة حركة النجوم ظاهرياً عبر الليل.</li>
+                            <li><strong>الرحلات الليلية:</strong> تعتمد الكشافة في مهارات الفلك البري على صفاء السماء لتجنب الضياع عند تعطل البوصلة التقليدية.</li>
+                        </ul>
+                    </div>
+                `,
+                image: "https://i.postimg.cc/sg6L6JH2/1785879343630.png",
+                questions: [
+                    {
+                        q: "إلى أي جهة يشير دائماً نجم القطب الشمالي في نصف الكرة الشمالي؟",
+                        options: ["جهة الجنوب", "جهة الشرق", "جهة الشمال", "جهة الغرب"],
+                        correct: 2
+                    },
+                    {
+                        q: "لماذا يُعد الاهتداء بالنجوم مفيداً للكشاف في الرحلات الخلوية الليلية؟",
+                        options: ["لإضاءة الطريق كالمصابيح القوية", "لتحديد الاتجاهات بدقة عند تعطل البوصلة أو في البرية المفتوحة", "لإبعاد الحيوانات البرية فقط", "لزيادة سرعة السير في الظلام"],
+                        correct: 1
+                    }
+                ]
+            }
+        ];
+
+        let currentIndex = 0;
+        let score = 0;
+        let teamName = "";
+        let selectedQuestionsForSession = [];
+        let currentQuestion = null;
+        let timerInterval = null;
+        let timeLeft = 15;
+
+        function startGame() {
+            const input = document.getElementById("team-name");
+            teamName = input.value.trim();
+            if (teamName === "") {
+                document.getElementById("error-msg").classList.remove("hidden");
+                return;
+            }
+
+            selectedQuestionsForSession = stepsData.map(step => {
+                const randomIndex = Math.floor(Math.random() * step.questions.length);
+                return step.questions[randomIndex];
+            });
+
+            document.getElementById("game-container").classList.add("hidden");
+            document.getElementById("display-team-name").textContent = teamName;
+            
+            const contentContainer = document.getElementById("content-container");
+            contentContainer.classList.remove("hidden");
+            contentContainer.classList.add("flex");
+
+            updateContent();
+        }
+
+        function updateContent() {
+            const current = stepsData[currentIndex];
+            document.getElementById("step-title").textContent = current.title;
+            document.getElementById("step-desc").innerHTML = current.desc;
+            document.getElementById("step-image").src = current.image;
+            document.getElementById("current-step").textContent = currentIndex + 1;
+            document.getElementById("total-steps").textContent = stepsData.length;
+            document.getElementById("score-val").textContent = score;
+        }
+
+        function openQuiz() {
+            document.getElementById("content-container").classList.add("hidden");
+            const quizContainer = document.getElementById("quiz-container");
+            quizContainer.classList.remove("hidden");
+
+            currentQuestion = selectedQuestionsForSession[currentIndex];
+
+            document.getElementById("quiz-question").textContent = currentQuestion.q;
+            
+            const optionsEl = document.getElementById("quiz-options");
+            optionsEl.innerHTML = "";
+            
+            currentQuestion.options.forEach((opt, index) => {
+                optionsEl.innerHTML += `<button onclick="checkAnswer(${index})" class="w-full text-right bg-slate-900 border border-slate-700 hover:border-emerald-500 p-3 rounded-xl transition text-sm font-semibold">${opt}</button>`;
+            });
+
+            document.getElementById("quiz-feedback").classList.add("hidden");
+            document.getElementById("next-station-btn").classList.add("hidden");
+
+            timeLeft = 15;
+            document.getElementById("timer").textContent = timeLeft;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById("timer").textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    lockAnswers(false, 0, "⏰ انتهى الوقت! (0 نقاط)");
+                }
+            }, 1000);
+        }
+
+        function checkAnswer(selectedIndex) {
+            clearInterval(timerInterval);
+            const isCorrect = (selectedIndex === currentQuestion.correct);
+            
+            if (isCorrect) {
+                let earnedPoints = Math.max(1, timeLeft);
+                score += earnedPoints;
+                lockAnswers(true, earnedPoints, `✅ إجابة صحيحة! ربحت (+${earnedPoints} نقاط) بناءً على سرعتك.`);
+            } else {
+                lockAnswers(false, 0, "❌ إجابة خاطئة! الإجابة الصحيحة كانت: " + currentQuestion.options[currentQuestion.correct]);
+            }
+        }
+
+        function lockAnswers(isCorrect, pointsAdded, message) {
+            const optionsEl = document.getElementById("quiz-options");
+            const buttons = optionsEl.getElementsByTagName("button");
+            for (let btn of buttons) {
+                btn.disabled = true;
+                btn.classList.add("opacity-50");
+            }
+
+            const feedbackEl = document.getElementById("quiz-feedback");
+            feedbackEl.textContent = message;
+            feedbackEl.className = `text-sm font-bold text-center mb-4 ${isCorrect ? 'text-emerald-400' : 'text-rose-400'}`;
+            feedbackEl.classList.remove("hidden");
+
+            document.getElementById("score-val").textContent = score;
+            document.getElementById("next-station-btn").classList.remove("hidden");
+        }
+
+        function nextStation() {
+            currentIndex++;
+            document.getElementById("quiz-container").classList.add("hidden");
+
+            if (currentIndex < stepsData.length) {
+                const contentContainer = document.getElementById("content-container");
+                contentContainer.classList.remove("hidden");
+                contentContainer.classList.add("flex");
+                updateContent();
+            } else {
+                document.getElementById("result-container").classList.remove("hidden");
+                document.getElementById("final-team-name").textContent = teamName;
+                document.getElementById("final-score").textContent = score;
+            }
+        }
+    </script>
+
+</body>
+</html>
